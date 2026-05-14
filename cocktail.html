@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="配方库">
+<title>鸡尾酒配方库</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  :root{
+    --amber:#FAC775;--amber-text:#412402;--amber-deep:#EF9F27;
+    --bg:#FAFAF8;--surface:#FFFFFF;--surface2:#F4F2ED;
+    --border:#E8E6E0;--border2:#D0CEC8;
+    --text:#1A1916;--text2:#6B6860;--text3:#A8A69E;
+    --green:#1D9E75;--green-bg:#E1F5EE;--green-text:#085041;
+    --red:#A32D2D;--red-bg:#FCEBEB;--red-border:#F09595;
+    --radius:12px;--radius-sm:8px;--radius-pill:40px;
+    --safe-bottom:env(safe-area-inset-bottom, 0px);
+  }
+  html,body{height:100%;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;color:var(--text);font-size:16px;line-height:1.4;}
+  #app{max-width:430px;margin:0 auto;min-height:100vh;background:var(--bg);position:relative;}
+
+  /* ── Typography ── */
+  h1{font-size:19px;font-weight:600;color:var(--text);}
+  h2{font-size:17px;font-weight:600;color:var(--text);}
+  .label{font-size:11px;font-weight:600;color:var(--text2);letter-spacing:.06em;text-transform:uppercase;}
+
+  /* ── Layout atoms ── */
+  .page{padding-bottom:calc(80px + var(--safe-bottom));}
+  .hdr{display:flex;align-items:center;gap:10px;padding:14px 16px 12px;border-bottom:1px solid var(--border);background:var(--surface);}
+  .hdr h1{flex:1;}
+  .body{padding:12px 16px;}
+  .section-title{padding:16px 16px 6px;font-size:11px;font-weight:600;color:var(--text2);letter-spacing:.06em;text-transform:uppercase;}
+
+  /* ── Cards ── */
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:10px;}
+  .card-tap{cursor:pointer;transition:background .12s;}
+  .card-tap:active{background:var(--surface2);}
+  .row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);}
+  .row:last-child{border-bottom:none;}
+
+  /* ── Buttons ── */
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 14px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:transparent;cursor:pointer;font-size:14px;font-family:inherit;color:var(--text);-webkit-appearance:none;}
+  .btn:active{background:var(--surface2);}
+  .btn-icon{padding:8px;border-radius:var(--radius-sm);}
+  .btn-amber{background:var(--amber);border:none;color:var(--amber-text);font-weight:600;}
+  .btn-amber:active{background:var(--amber-deep);}
+  .btn-pill{border-radius:var(--radius-pill);padding:10px 22px;font-size:15px;font-weight:600;}
+  .btn-danger{border-color:var(--red-border);color:var(--red);}
+  .btn-full{width:100%;justify-content:center;}
+  .btn-disabled{background:var(--surface2);color:var(--text3);border-color:var(--border);cursor:not-allowed;}
+
+  /* ── FAB ── */
+  .fab-wrap{position:sticky;bottom:calc(20px + var(--safe-bottom));display:flex;justify-content:center;pointer-events:none;padding:0 16px;}
+  .fab{pointer-events:all;box-shadow:0 4px 16px rgba(0,0,0,.14);}
+
+  /* ── Form ── */
+  .inp{width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:15px;font-family:inherit;-webkit-appearance:none;outline:none;}
+  .inp:focus{border-color:var(--amber-deep);}
+  textarea.inp{resize:vertical;line-height:1.6;}
+  .form-group{margin-bottom:16px;}
+  .form-group .label{display:block;margin-bottom:6px;}
+  .ing-row{display:flex;gap:8px;align-items:center;margin-bottom:8px;}
+  .ing-row .inp:first-child{flex:2;}
+  .ing-row .inp:nth-child(2){flex:1;}
+
+  /* ── Badge ── */
+  .badge{display:inline-block;font-size:12px;font-weight:600;padding:3px 11px;border-radius:20px;background:var(--amber);color:var(--amber-text);}
+
+  /* ── Quiz progress ── */
+  .progress-bar{height:3px;background:var(--border);}
+  .progress-fill{height:100%;background:var(--amber);transition:width .3s;}
+
+  /* ── Quiz option ── */
+  .opt{display:flex;align-items:flex-start;gap:10px;cursor:pointer;}
+  .opt-letter{min-width:22px;height:22px;border-radius:50%;background:var(--surface2);color:var(--text2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;margin-top:1px;}
+  .opt-text{font-size:13px;line-height:1.65;color:var(--text);}
+  .opt-correct{background:var(--green-bg);border-color:var(--green);}
+  .opt-correct .opt-letter{background:var(--green);color:#fff;}
+  .opt-correct .opt-text{color:var(--green-text);}
+  .opt-wrong{background:var(--red-bg);border-color:var(--red);}
+  .opt-wrong .opt-letter{background:var(--red);color:#fff;}
+  .opt-wrong .opt-text{color:var(--red);}
+  .opt-dim .opt-text{color:var(--text3);}
+
+  /* ── Result ── */
+  .result-icon{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;}
+
+  /* ── Confirm delete ── */
+  .confirm-box{background:var(--red-bg);border:1px solid var(--red-border);border-radius:var(--radius);padding:14px;text-align:center;}
+  .confirm-box p{color:var(--red);font-size:14px;margin-bottom:12px;}
+  .confirm-btns{display:flex;gap:10px;}
+  .confirm-btns button{flex:1;}
+  .btn-del-confirm{background:var(--red);border:none;color:#fff;font-weight:600;}
+
+  /* ── Toast ── */
+  .toast{position:fixed;bottom:calc(90px + var(--safe-bottom));left:50%;transform:translateX(-50%) translateY(10px);background:#1A1916;color:#fff;font-size:13px;padding:8px 18px;border-radius:var(--radius-pill);opacity:0;transition:all .25s;pointer-events:none;white-space:nowrap;z-index:999;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  /* ── Chevron ── */
+  .chev::after{content:'›';font-size:20px;color:var(--text3);line-height:1;}
+
+  /* ── Empty state ── */
+  .empty{text-align:center;color:var(--text2);font-size:14px;margin-top:60px;line-height:1.8;}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const KEY = 'cocktails-v2';
+const SEED = [
+  {id:'s1',name:'莫吉托',glass:'Highball杯',ing:[{n:'白朗姆酒',a:'60ml'},{n:'新鲜青柠汁',a:'30ml'},{n:'糖浆',a:'15ml'},{n:'薄荷叶',a:'10片'},{n:'苏打水',a:'60ml'}],note:'捣碎薄荷叶与青柠汁，加碎冰，倒入朗姆酒和糖浆，补苏打水轻轻搅拌。'},
+  {id:'s2',name:'玛格丽特',glass:'鸡尾酒杯',ing:[{n:'龙舌兰酒',a:'50ml'},{n:'橙皮力娇酒',a:'20ml'},{n:'青柠汁',a:'20ml'},{n:'盐',a:'适量'}],note:'杯口盐边装饰，所有材料加冰摇匀过滤倒入。'},
+  {id:'s3',name:'古典鸡尾酒',glass:'古典杯',ing:[{n:'波本威士忌',a:'60ml'},{n:'安格斯图拉苦精',a:'2 dash'},{n:'方糖',a:'1块'},{n:'矿泉水',a:'少许'}],note:'捣碎方糖与苦精，加大冰块，倒入威士忌轻轻搅拌。'},
+  {id:'s4',name:'内格罗尼',glass:'古典杯',ing:[{n:'金酒',a:'30ml'},{n:'甜苦艾酒',a:'30ml'},{n:'金巴利',a:'30ml'},{n:'橙皮',a:'1片'}],note:'所有材料加冰充分搅拌，过滤倒入古典杯，橙皮装饰。'},
+  {id:'s5',name:'代基里',glass:'鸡尾酒杯',ing:[{n:'白朗姆酒',a:'60ml'},{n:'新鲜青柠汁',a:'30ml'},{n:'糖浆',a:'15ml'}],note:'所有材料加冰摇匀，过滤后倒入冰镇鸡尾酒杯。'},
+  {id:'s6',name:'大都会',glass:'马天尼杯',ing:[{n:'柠檬伏特加',a:'40ml'},{n:'白橙皮酒',a:'15ml'},{n:'蔓越莓汁',a:'30ml'},{n:'新鲜青柠汁',a:'10ml'}],note:'所有材料加冰摇匀过滤，倒入马天尼杯，橙皮装饰。'},
+];
+
+// ── State ───────────────────────────────────────────────────
+let state = {
+  cocktails: [],
+  view: 'list',   // list | detail | edit | quiz
+  selId: null,
+  editId: null,   // null = new
+  quiz: null,
+  quizIdx: 0,
+  quizPicked: null,
+  quizScore: 0,
+  quizDone: false,
+  confirmDel: false,
+};
+
+// ── Storage ──────────────────────────────────────────────────
+function load() {
+  try { const d = localStorage.getItem(KEY); return d ? JSON.parse(d) : null; } catch { return null; }
+}
+function save(list) {
+  try { localStorage.setItem(KEY, JSON.stringify(list)); } catch {}
+}
+
+// ── Utils ────────────────────────────────────────────────────
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+const shuffle = a => [...a].sort(() => Math.random() - .5);
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function ingStr(ing) {
+  return ing.slice(0,4).map(x => `${esc(x.n)} ${esc(x.a)}`).join(' &middot; ') + (ing.length > 4 ? ' …' : '');
+}
+function genQuiz(cs) {
+  return shuffle(cs).map(c => {
+    const others = shuffle(cs.filter(x => x.id !== c.id)).slice(0,3);
+    return {
+      name: c.name,
+      opts: shuffle([{id:uid(),ing:c.ing,correct:true}, ...others.map(d=>({id:uid(),ing:d.ing,correct:false}))])
+    };
+  });
+}
+let toastTimer;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 1800);
+}
+
+// ── Render ───────────────────────────────────────────────────
+function render() {
+  const { view, cocktails, selId, editId, quiz, quizIdx, quizPicked, quizScore, quizDone, confirmDel } = state;
+  const app = document.getElementById('app');
+
+  if (view === 'list') {
+    const canPractice = cocktails.length >= 4;
+    app.innerHTML = `
+      <div class="page">
+        <div class="hdr">
+          <h1>🍹 配方库</h1>
+          <button class="btn btn-pill btn-amber${canPractice ? '' : ' btn-disabled'}" id="btn-practice" style="font-size:14px;padding:8px 18px;">
+            ▶ 练习
+          </button>
+        </div>
+        <p class="section-title">${cocktails.length} 款配方${canPractice ? '' : ' · 需4款以上才能练习'}</p>
+        <div class="body" style="padding-top:4px;">
+          ${cocktails.length === 0 ? `<p class="empty">还没有配方<br>点击下方按钮添加</p>` :
+            cocktails.map(c => `
+              <div class="card card-tap chev" data-id="${esc(c.id)}" style="display:flex;justify-content:space-between;align-items:center;" onclick="sel('${esc(c.id)}')">
+                <div>
+                  <p style="font-size:15px;font-weight:600;">${esc(c.name)}</p>
+                  <p style="font-size:12px;color:var(--text2);margin-top:3px;">${esc(c.glass||'—')} &nbsp;·&nbsp; ${c.ing.length} 种原料</p>
+                </div>
+              </div>`).join('')}
+        </div>
+        <div class="fab-wrap">
+          <button class="btn btn-amber btn-pill fab" onclick="goEdit(null)">＋ 添加配方</button>
+        </div>
+      </div>`;
+    if (canPractice) document.getElementById('btn-practice').onclick = startPractice;
+
+  } else if (view === 'detail') {
+    const c = cocktails.find(x => x.id === selId);
+    if (!c) { goList(); return; }
+    app.innerHTML = `
+      <div class="page">
+        <div class="hdr">
+          <button class="btn btn-icon" onclick="goList()">‹ 返回</button>
+          <h1 style="flex:1;">${esc(c.name)}</h1>
+          <button class="btn btn-icon" onclick="goEdit('${esc(c.id)}')">✎</button>
+        </div>
+        <div class="body">
+          ${c.glass ? `<span class="badge" style="margin-bottom:18px;display:inline-block;">${esc(c.glass)}</span>` : ''}
+          <p class="label" style="margin-bottom:8px;">配方原料</p>
+          <div class="card">
+            ${c.ing.map((item,i) => `
+              <div class="row">
+                <span style="font-size:15px;">${esc(item.n)}</span>
+                <span style="font-size:15px;font-weight:600;color:var(--text2);">${esc(item.a)}</span>
+              </div>`).join('')}
+          </div>
+          ${c.note ? `
+            <p class="label" style="margin:18px 0 8px;">制作方法</p>
+            <div class="card"><p style="font-size:14px;line-height:1.7;">${esc(c.note)}</p></div>` : ''}
+          <div style="margin-top:24px;">
+            ${confirmDel ? `
+              <div class="confirm-box">
+                <p>确认删除《${esc(c.name)}》？</p>
+                <div class="confirm-btns">
+                  <button class="btn" onclick="cancelDel()">取消</button>
+                  <button class="btn btn-del-confirm" onclick="deleteCocktail('${esc(c.id)}')">确认删除</button>
+                </div>
+              </div>` : `
+              <button class="btn btn-danger btn-full" onclick="askDel()">🗑 删除配方</button>`}
+          </div>
+        </div>
+      </div>`;
+
+  } else if (view === 'edit') {
+    const c = editId ? cocktails.find(x => x.id === editId) : null;
+    const f = state.editForm;
+    app.innerHTML = `
+      <div class="page">
+        <div class="hdr">
+          <button class="btn btn-icon" onclick="backFromEdit()">‹ 返回</button>
+          <h1 style="flex:1;">${c ? '编辑配方' : '新增配方'}</h1>
+          <button class="btn btn-amber" id="btn-save" onclick="saveForm()" style="padding:8px 18px;">保存</button>
+        </div>
+        <div class="body">
+          <div class="form-group">
+            <span class="label">鸡尾酒名称 *</span>
+            <input class="inp" id="f-name" type="text" placeholder="例：莫吉托" value="${esc(f.name)}" oninput="updateForm('name',this.value)">
+          </div>
+          <div class="form-group">
+            <span class="label">杯型</span>
+            <input class="inp" id="f-glass" type="text" placeholder="例：Highball杯" value="${esc(f.glass)}" oninput="updateForm('glass',this.value)">
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <span class="label">原料 *</span>
+            <button class="btn" style="font-size:13px;padding:5px 12px;" onclick="addIng()">＋ 添加</button>
+          </div>
+          <div id="ing-list">
+            ${f.ing.map((item,i) => ingRow(item,i,f.ing.length)).join('')}
+          </div>
+          <div class="form-group" style="margin-top:8px;">
+            <span class="label">制作方法（可选）</span>
+            <textarea class="inp" id="f-note" rows="4" placeholder="描述制作步骤…" oninput="updateForm('note',this.value)">${esc(f.note)}</textarea>
+          </div>
+        </div>
+      </div>`;
+    checkSaveBtn();
+
+  } else if (view === 'quiz') {
+    if (quizDone) {
+      const total = quiz.length;
+      const pct = Math.round(quizScore / total * 100);
+      const { icon, msg, ic, ibg } = pct >= 80
+        ? {icon:'🏆', msg:'优秀！', ic:'#854F0B', ibg:'#FAC775'}
+        : pct >= 50
+        ? {icon:'👍', msg:'不错！', ic:'#0F6E56', ibg:'#9FE1CB'}
+        : {icon:'💪', msg:'继续加油！', ic:'#534AB7', ibg:'#CECBF6'};
+      app.innerHTML = `
+        <div style="min-height:70vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center;">
+          <div class="result-icon" style="background:${ibg};font-size:32px;">${icon}</div>
+          <p style="font-size:40px;font-weight:700;margin-bottom:4px;">${quizScore}/${total}</p>
+          <p style="font-size:14px;color:var(--text2);margin-bottom:6px;">正确率 ${pct}%</p>
+          <p style="font-size:18px;font-weight:600;color:${ic};margin-bottom:32px;">${msg}</p>
+          <button class="btn btn-amber btn-pill" onclick="goList()" style="font-size:15px;">返回配方库</button>
+        </div>`;
+      return;
+    }
+    const q = quiz[quizIdx];
+    const letters = ['A','B','C','D'];
+    app.innerHTML = `
+      <div class="page">
+        <div class="hdr" style="justify-content:space-between;">
+          <button class="btn btn-icon" onclick="goList()">✕</button>
+          <span style="font-size:14px;font-weight:600;">⭐ ${quizScore} 分</span>
+          <span style="font-size:13px;color:var(--text2);">${quizIdx+1} / ${quiz.length}</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${(quizIdx/quiz.length)*100}%;"></div></div>
+        <div class="body" style="padding-top:22px;">
+          <p class="label" style="margin-bottom:6px;">下列哪组原料属于</p>
+          <h2 style="font-size:26px;margin-bottom:22px;">${esc(q.name)}</h2>
+          ${q.opts.map((opt,i) => {
+            let cls = 'card';
+            if (quizPicked) {
+              if (opt.correct) cls += ' opt-correct';
+              else if (opt.id === quizPicked.id) cls += ' opt-wrong';
+              else cls += ' opt-dim';
+            }
+            return `<div class="${cls} opt${quizPicked ? '' : ' card-tap'}" onclick="${quizPicked ? '' : `pickOpt('${opt.id}')`}">
+              <span class="opt-letter">${quizPicked && opt.correct ? '✓' : quizPicked && opt.id===quizPicked.id && !opt.correct ? '✗' : letters[i]}</span>
+              <p class="opt-text">${ingStr(opt.ing)}</p>
+            </div>`;
+          }).join('')}
+          ${quizPicked ? `
+            <button class="btn btn-amber btn-full btn-pill" onclick="nextQ()" style="margin-top:8px;font-size:15px;padding:13px 0;">
+              ${quizIdx+1 >= quiz.length ? '查看成绩 →' : '下一题 →'}
+            </button>` : ''}
+        </div>
+      </div>`;
+  }
+}
+
+function ingRow(item, i, total) {
+  return `<div class="ing-row" id="ing-row-${i}">
+    <input class="inp" type="text" placeholder="原料名称" value="${esc(item.n)}" oninput="updateIng(${i},'n',this.value)">
+    <input class="inp" type="text" placeholder="用量" value="${esc(item.a)}" oninput="updateIng(${i},'a',this.value)">
+    ${total > 1 ? `<button class="btn" style="color:var(--red);border-color:var(--red-border);padding:9px 10px;flex-shrink:0;" onclick="delIng(${i})">✕</button>` : ''}
+  </div>`;
+}
+
+// ── Actions ──────────────────────────────────────────────────
+function goList() { state.view='list'; state.confirmDel=false; render(); }
+function sel(id) { state.selId=id; state.view='detail'; state.confirmDel=false; render(); }
+function askDel() { state.confirmDel=true; render(); }
+function cancelDel() { state.confirmDel=false; render(); }
+function deleteCocktail(id) {
+  state.cocktails = state.cocktails.filter(c => c.id !== id);
+  save(state.cocktails); goList(); toast('已删除');
+}
+function goEdit(id) {
+  state.editId = id;
+  const c = id ? state.cocktails.find(x=>x.id===id) : null;
+  state.editForm = c
+    ? { name:c.name, glass:c.glass||'', ing:c.ing.map(x=>({...x})), note:c.note||'' }
+    : { name:'', glass:'', ing:[{n:'',a:''}], note:'' };
+  state.view = 'edit'; render();
+}
+function backFromEdit() {
+  state.view = state.editId ? 'detail' : 'list'; render();
+}
+function updateForm(k, v) { state.editForm[k] = v; checkSaveBtn(); }
+function updateIng(i, k, v) { state.editForm.ing[i][k] = v; checkSaveBtn(); }
+function addIng() {
+  state.editForm.ing.push({n:'',a:''});
+  const list = document.getElementById('ing-list');
+  if (list) {
+    const div = document.createElement('div');
+    div.innerHTML = ingRow({n:'',a:''}, state.editForm.ing.length-1, state.editForm.ing.length);
+    list.appendChild(div.firstChild);
+  }
+  checkSaveBtn();
+}
+function delIng(i) {
+  state.editForm.ing.splice(i,1);
+  const list = document.getElementById('ing-list');
+  if (list) {
+    list.innerHTML = state.editForm.ing.map((item,j) => ingRow(item,j,state.editForm.ing.length)).join('');
+  }
+  checkSaveBtn();
+}
+function checkSaveBtn() {
+  const btn = document.getElementById('btn-save');
+  if (!btn) return;
+  const ok = state.editForm.name.trim() && state.editForm.ing.some(x=>x.n.trim());
+  btn.classList.toggle('btn-disabled', !ok);
+}
+function saveForm() {
+  const f = state.editForm;
+  if (!f.name.trim() || !f.ing.some(x=>x.n.trim())) return;
+  const clean = { name:f.name.trim(), glass:f.glass.trim(), ing:f.ing.filter(x=>x.n.trim()), note:f.note.trim() };
+  if (state.editId) {
+    state.cocktails = state.cocktails.map(c => c.id===state.editId ? {...c,...clean} : c);
+  } else {
+    state.cocktails.push({ id:uid(), ...clean });
+  }
+  save(state.cocktails);
+  const wasNew = !state.editId;
+  state.view = state.editId ? 'detail' : 'list';
+  render();
+  toast(wasNew ? '配方已添加' : '已保存');
+}
+function startPractice() {
+  state.quiz = genQuiz(state.cocktails);
+  state.quizIdx = 0; state.quizPicked = null; state.quizScore = 0; state.quizDone = false;
+  state.view = 'quiz'; render();
+}
+function pickOpt(id) {
+  const q = state.quiz[state.quizIdx];
+  const opt = q.opts.find(o => o.id === id);
+  if (!opt) return;
+  state.quizPicked = opt;
+  if (opt.correct) state.quizScore++;
+  render();
+}
+function nextQ() {
+  if (state.quizIdx + 1 >= state.quiz.length) { state.quizDone = true; render(); return; }
+  state.quizIdx++; state.quizPicked = null; render();
+}
+
+// ── Init ─────────────────────────────────────────────────────
+const stored = load();
+state.cocktails = stored || SEED;
+if (!stored) save(state.cocktails);
+render();
+</script>
+</body>
+</html>
