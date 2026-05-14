@@ -74,7 +74,7 @@ textarea.inp{resize:vertical;line-height:1.6;}
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 import { getFirestore, collection, doc, getDocs, setDoc, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
 // ── Firebase init ────────────────────────────────────────────
@@ -383,7 +383,7 @@ function submitQ(){if(S.qSel.size===0)return;S.qSub=true;const q=S.quiz[S.qIdx];
 function nextQ(){if(S.qIdx+1>=S.quiz.length){S.qDone=true;render();return;}S.qIdx++;S.qSel=new Set();S.qSub=false;render();}
 
 async function signIn(){
-  try{ await signInWithPopup(auth,gp); }
+  try{ await signInWithRedirect(auth,gp); }
   catch(e){ toast('Sign in failed. Please try again.'); }
 }
 async function doSignOut(){
@@ -400,6 +400,8 @@ window.signIn=signIn; window.doSignOut=doSignOut;
 window.S=S; window.render=render;
 
 // ── Auth listener ────────────────────────────────────────────
+getRedirectResult(auth).catch(e => console.log('redirect err', e));
+
 onAuthStateChanged(auth, async user => {
   if(user){
     S.uid=user.uid; S.userName=user.displayName; S.userPhoto=user.photoURL;
