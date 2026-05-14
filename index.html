@@ -1,423 +1,420 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="配方库">
-<title>鸡尾酒配方库</title>
+<meta name="apple-mobile-web-app-title" content="Bar Trainer">
+<title>Bar Recipe Trainer</title>
 <style>
-  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-  :root{
-    --amber:#FAC775;--amber-text:#412402;--amber-deep:#EF9F27;
-    --bg:#FAFAF8;--surface:#FFFFFF;--surface2:#F4F2ED;
-    --border:#E8E6E0;--border2:#D0CEC8;
-    --text:#1A1916;--text2:#6B6860;--text3:#A8A69E;
-    --green:#1D9E75;--green-bg:#E1F5EE;--green-text:#085041;
-    --red:#A32D2D;--red-bg:#FCEBEB;--red-border:#F09595;
-    --radius:12px;--radius-sm:8px;--radius-pill:40px;
-    --safe-bottom:env(safe-area-inset-bottom, 0px);
-  }
-  html,body{height:100%;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;color:var(--text);font-size:16px;line-height:1.4;}
-  #app{max-width:430px;margin:0 auto;min-height:100vh;background:var(--bg);position:relative;}
-
-  /* ── Typography ── */
-  h1{font-size:19px;font-weight:600;color:var(--text);}
-  h2{font-size:17px;font-weight:600;color:var(--text);}
-  .label{font-size:11px;font-weight:600;color:var(--text2);letter-spacing:.06em;text-transform:uppercase;}
-
-  /* ── Layout atoms ── */
-  .page{padding-bottom:calc(80px + var(--safe-bottom));}
-  .hdr{display:flex;align-items:center;gap:10px;padding:14px 16px 12px;border-bottom:1px solid var(--border);background:var(--surface);}
-  .hdr h1{flex:1;}
-  .body{padding:12px 16px;}
-  .section-title{padding:16px 16px 6px;font-size:11px;font-weight:600;color:var(--text2);letter-spacing:.06em;text-transform:uppercase;}
-
-  /* ── Cards ── */
-  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:10px;}
-  .card-tap{cursor:pointer;transition:background .12s;}
-  .card-tap:active{background:var(--surface2);}
-  .row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);}
-  .row:last-child{border-bottom:none;}
-
-  /* ── Buttons ── */
-  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 14px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:transparent;cursor:pointer;font-size:14px;font-family:inherit;color:var(--text);-webkit-appearance:none;}
-  .btn:active{background:var(--surface2);}
-  .btn-icon{padding:8px;border-radius:var(--radius-sm);}
-  .btn-amber{background:var(--amber);border:none;color:var(--amber-text);font-weight:600;}
-  .btn-amber:active{background:var(--amber-deep);}
-  .btn-pill{border-radius:var(--radius-pill);padding:10px 22px;font-size:15px;font-weight:600;}
-  .btn-danger{border-color:var(--red-border);color:var(--red);}
-  .btn-full{width:100%;justify-content:center;}
-  .btn-disabled{background:var(--surface2);color:var(--text3);border-color:var(--border);cursor:not-allowed;}
-
-  /* ── FAB ── */
-  .fab-wrap{position:sticky;bottom:calc(20px + var(--safe-bottom));display:flex;justify-content:center;pointer-events:none;padding:0 16px;}
-  .fab{pointer-events:all;box-shadow:0 4px 16px rgba(0,0,0,.14);}
-
-  /* ── Form ── */
-  .inp{width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:15px;font-family:inherit;-webkit-appearance:none;outline:none;}
-  .inp:focus{border-color:var(--amber-deep);}
-  textarea.inp{resize:vertical;line-height:1.6;}
-  .form-group{margin-bottom:16px;}
-  .form-group .label{display:block;margin-bottom:6px;}
-  .ing-row{display:flex;gap:8px;align-items:center;margin-bottom:8px;}
-  .ing-row .inp:first-child{flex:2;}
-  .ing-row .inp:nth-child(2){flex:1;}
-
-  /* ── Badge ── */
-  .badge{display:inline-block;font-size:12px;font-weight:600;padding:3px 11px;border-radius:20px;background:var(--amber);color:var(--amber-text);}
-
-  /* ── Quiz progress ── */
-  .progress-bar{height:3px;background:var(--border);}
-  .progress-fill{height:100%;background:var(--amber);transition:width .3s;}
-
-  /* ── Quiz option ── */
-  .opt{display:flex;align-items:flex-start;gap:10px;cursor:pointer;}
-  .opt-letter{min-width:22px;height:22px;border-radius:50%;background:var(--surface2);color:var(--text2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;margin-top:1px;}
-  .opt-text{font-size:13px;line-height:1.65;color:var(--text);}
-  .opt-correct{background:var(--green-bg);border-color:var(--green);}
-  .opt-correct .opt-letter{background:var(--green);color:#fff;}
-  .opt-correct .opt-text{color:var(--green-text);}
-  .opt-wrong{background:var(--red-bg);border-color:var(--red);}
-  .opt-wrong .opt-letter{background:var(--red);color:#fff;}
-  .opt-wrong .opt-text{color:var(--red);}
-  .opt-dim .opt-text{color:var(--text3);}
-
-  /* ── Result ── */
-  .result-icon{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;}
-
-  /* ── Confirm delete ── */
-  .confirm-box{background:var(--red-bg);border:1px solid var(--red-border);border-radius:var(--radius);padding:14px;text-align:center;}
-  .confirm-box p{color:var(--red);font-size:14px;margin-bottom:12px;}
-  .confirm-btns{display:flex;gap:10px;}
-  .confirm-btns button{flex:1;}
-  .btn-del-confirm{background:var(--red);border:none;color:#fff;font-weight:600;}
-
-  /* ── Toast ── */
-  .toast{position:fixed;bottom:calc(90px + var(--safe-bottom));left:50%;transform:translateX(-50%) translateY(10px);background:#1A1916;color:#fff;font-size:13px;padding:8px 18px;border-radius:var(--radius-pill);opacity:0;transition:all .25s;pointer-events:none;white-space:nowrap;z-index:999;}
-  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-
-  /* ── Chevron ── */
-  .chev::after{content:'›';font-size:20px;color:var(--text3);line-height:1;}
-
-  /* ── Empty state ── */
-  .empty{text-align:center;color:var(--text2);font-size:14px;margin-top:60px;line-height:1.8;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --amber:#FAC775;--amber-t:#412402;--amber-d:#EF9F27;
+  --bg:#FAFAF8;--surf:#FFFFFF;--surf2:#F4F2ED;
+  --bdr:#E8E6E0;--bdr2:#D0CEC8;
+  --t1:#1A1916;--t2:#6B6860;--t3:#A8A69E;
+  --green:#1D9E75;--gbg:#E1F5EE;--gt:#085041;
+  --red:#A32D2D;--rbg:#FCEBEB;--rbdr:#F09595;
+  --orange:#BA7517;--obg:#FAEEDA;--ot:#633806;
+  --rad:12px;--rads:8px;--radp:40px;
+  --sb:env(safe-area-inset-bottom,0px);
+}
+html,body{height:100%;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;color:var(--t1);font-size:16px;}
+#app{max-width:430px;margin:0 auto;min-height:100vh;}
+.page{padding-bottom:calc(80px + var(--sb));}
+.hdr{display:flex;align-items:center;gap:10px;padding:14px 16px 12px;border-bottom:1px solid var(--bdr);background:var(--surf);position:sticky;top:0;z-index:10;}
+.hdr h1{flex:1;font-size:18px;font-weight:600;}
+.body{padding:12px 16px;}
+.sec-lbl{padding:14px 16px 6px;font-size:11px;font-weight:600;color:var(--t2);letter-spacing:.06em;text-transform:uppercase;}
+.card{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--rad);padding:12px 14px;margin-bottom:10px;}
+.card-tap{cursor:pointer;transition:background .1s;}
+.card-tap:active{background:var(--surf2);}
+.row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--bdr);}
+.row:last-child{border-bottom:none;}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 14px;border-radius:var(--rads);border:1px solid var(--bdr2);background:transparent;cursor:pointer;font-size:14px;font-family:inherit;color:var(--t1);}
+.btn:active{background:var(--surf2);}
+.bti{padding:8px;border-radius:var(--rads);}
+.bta{background:var(--amber);border:none;color:var(--amber-t);font-weight:600;}
+.bta:active{background:var(--amber-d);}
+.btp{border-radius:var(--radp);padding:10px 22px;font-size:15px;font-weight:600;}
+.btd{border-color:var(--rbdr);color:var(--red);}
+.btf{width:100%;justify-content:center;}
+.btx{background:var(--surf2)!important;color:var(--t3)!important;cursor:not-allowed!important;}
+.fab-w{position:sticky;bottom:calc(20px + var(--sb));display:flex;justify-content:center;}
+.fab{box-shadow:0 4px 16px rgba(0,0,0,.14);}
+.inp{width:100%;padding:10px 12px;border-radius:var(--rads);border:1px solid var(--bdr2);background:var(--surf);color:var(--t1);font-size:15px;font-family:inherit;outline:none;}
+.inp:focus{border-color:var(--amber-d);}
+textarea.inp{resize:vertical;line-height:1.6;}
+.fg{margin-bottom:16px;}
+.lbl{font-size:12px;font-weight:600;color:var(--t2);letter-spacing:.04em;text-transform:uppercase;display:block;margin-bottom:6px;}
+.ir{display:flex;gap:8px;align-items:center;margin-bottom:8px;}
+.ir .inp:first-child{flex:2;}
+.ir .inp:nth-child(2){flex:1;}
+.badge{display:inline-block;font-size:12px;font-weight:600;padding:3px 11px;border-radius:20px;background:var(--amber);color:var(--amber-t);}
+.chips{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:20px;}
+.chip{padding:10px 14px;border-radius:var(--radp);border:1.5px solid var(--bdr2);background:var(--surf);font-size:14px;font-family:inherit;cursor:pointer;color:var(--t1);transition:all .12s;-webkit-appearance:none;line-height:1.2;}
+.chip:active{transform:scale(.97);}
+.chip.sel{background:var(--amber);border-color:var(--amber-d);color:var(--amber-t);font-weight:600;}
+.chip.c-ok{background:var(--gbg);border-color:var(--green);color:var(--gt);font-weight:600;cursor:default;}
+.chip.c-bad{background:var(--rbg);border-color:var(--red);color:var(--red);font-weight:600;cursor:default;}
+.chip.c-miss{background:var(--obg);border-color:var(--orange);color:var(--ot);font-weight:600;cursor:default;}
+.chip.c-plain{border-color:var(--bdr);color:var(--t3);cursor:default;}
+.prog{height:3px;background:var(--bdr);}
+.prog-f{height:100%;background:var(--amber);transition:width .3s;}
+.toast{position:fixed;bottom:calc(90px + var(--sb));left:50%;transform:translateX(-50%) translateY(10px);background:#1A1916;color:#fff;font-size:13px;padding:8px 18px;border-radius:var(--radp);opacity:0;transition:all .25s;pointer-events:none;white-space:nowrap;z-index:999;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.center-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center;}
+.empty{text-align:center;color:var(--t2);font-size:14px;margin-top:60px;line-height:1.8;}
 </style>
 </head>
 <body>
-<div id="app"></div>
+<div id="app"><div class="center-screen"><p style="color:var(--t2);font-size:14px;">Loading…</p></div></div>
 <div class="toast" id="toast"></div>
 
-<script>
-const KEY = 'cocktails-v2';
-const SEED = [
-  {id:'s1',name:'莫吉托',glass:'Highball杯',ing:[{n:'白朗姆酒',a:'60ml'},{n:'新鲜青柠汁',a:'30ml'},{n:'糖浆',a:'15ml'},{n:'薄荷叶',a:'10片'},{n:'苏打水',a:'60ml'}],note:'捣碎薄荷叶与青柠汁，加碎冰，倒入朗姆酒和糖浆，补苏打水轻轻搅拌。'},
-  {id:'s2',name:'玛格丽特',glass:'鸡尾酒杯',ing:[{n:'龙舌兰酒',a:'50ml'},{n:'橙皮力娇酒',a:'20ml'},{n:'青柠汁',a:'20ml'},{n:'盐',a:'适量'}],note:'杯口盐边装饰，所有材料加冰摇匀过滤倒入。'},
-  {id:'s3',name:'古典鸡尾酒',glass:'古典杯',ing:[{n:'波本威士忌',a:'60ml'},{n:'安格斯图拉苦精',a:'2 dash'},{n:'方糖',a:'1块'},{n:'矿泉水',a:'少许'}],note:'捣碎方糖与苦精，加大冰块，倒入威士忌轻轻搅拌。'},
-  {id:'s4',name:'内格罗尼',glass:'古典杯',ing:[{n:'金酒',a:'30ml'},{n:'甜苦艾酒',a:'30ml'},{n:'金巴利',a:'30ml'},{n:'橙皮',a:'1片'}],note:'所有材料加冰充分搅拌，过滤倒入古典杯，橙皮装饰。'},
-  {id:'s5',name:'代基里',glass:'鸡尾酒杯',ing:[{n:'白朗姆酒',a:'60ml'},{n:'新鲜青柠汁',a:'30ml'},{n:'糖浆',a:'15ml'}],note:'所有材料加冰摇匀，过滤后倒入冰镇鸡尾酒杯。'},
-  {id:'s6',name:'大都会',glass:'马天尼杯',ing:[{n:'柠檬伏特加',a:'40ml'},{n:'白橙皮酒',a:'15ml'},{n:'蔓越莓汁',a:'30ml'},{n:'新鲜青柠汁',a:'10ml'}],note:'所有材料加冰摇匀过滤，倒入马天尼杯，橙皮装饰。'},
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+import { getFirestore, collection, doc, getDocs, setDoc, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+
+// ── Firebase init ────────────────────────────────────────────
+const fbApp = initializeApp({
+  apiKey:"AIzaSyCQD1PMeMRoSaclt-yfkPFmyKDqomhWfHw",
+  authDomain:"cocktail-app-1bd0d.firebaseapp.com",
+  projectId:"cocktail-app-1bd0d",
+  storageBucket:"cocktail-app-1bd0d.firebasestorage.app",
+  messagingSenderId:"192642804047",
+  appId:"1:192642804047:web:123fe090587358a02f7d3a"
+});
+const auth = getAuth(fbApp);
+const db   = getFirestore(fbApp);
+const gp   = new GoogleAuthProvider();
+
+// ── Seed data ────────────────────────────────────────────────
+const SEED=[
+  {id:'c01',name:'Aperol Spritz',glass:'Wine Glass',ing:[{n:'Aperol',a:'2 oz'},{n:'Soda Water',a:'1 oz'},{n:'La Scala Bubbly',a:'3 oz'},{n:'Ice',a:''}],method:'Build directly in glass over ice, top with soda and bubbly.',garnish:'Orange Slice'},
+  {id:'c02',name:'Baby I Got Your Honey',glass:'Nick & Nora',ing:[{n:'Empress Gin',a:'1 oz'},{n:'Elderflower Liqueur',a:'0.5 oz'},{n:'Lemon Juice',a:'0.75 oz'},{n:'Honey Syrup',a:'0.5 oz'}],method:'Shake with ice, double strain into chilled glass.',garnish:'Dehydrated Lemon'},
+  {id:'c03',name:'Berry Soda Fizz',glass:'Tom Collins Glass',ing:[{n:'Strawberries',a:'3'},{n:'Raspberries',a:'5'},{n:'Mint Leaves',a:'3'},{n:'Apple Juice',a:'2 oz'},{n:'Lime Juice',a:'0.75 oz'},{n:'Simple Syrup',a:'0.25 oz'},{n:'Soda Water',a:''}],method:'Muddle berries and mint, shake with ice, strain into glass, top with soda.',garnish:'Berry & Mint Bouquet'},
+  {id:'c04',name:'Cosmopolitan',glass:'Martini Glass',ing:[{n:'Vodka',a:'1.5 oz'},{n:'Triple Sec',a:'0.5 oz'},{n:'Lime Juice',a:'0.5 oz'},{n:'Cranberry Juice',a:'1 oz'}],method:'Shake with ice and strain into chilled glass.',garnish:'Lime Wheel'},
+  {id:'c05',name:'Dark and Stormy',glass:'Collins Glass',ing:[{n:'Dark Rum',a:'1 oz'},{n:'Fresh Lime Juice',a:'0.25 oz'},{n:'Ginger Beer',a:''},{n:'Ice',a:''}],method:'Build in glass over ice, float rum on top.',garnish:'Lime Wheel'},
+  {id:'c06',name:'Espresso Martini',glass:'Martini Glass',ing:[{n:'Vanilla Vodka',a:'1.5 oz'},{n:'Kahlua',a:'0.5 oz'},{n:'Frangelico',a:'0.25 oz'},{n:'Espresso',a:'1 tall'}],method:'Shake vigorously with ice, strain into chilled glass.',garnish:'Cinnamon Dust & 3 Espresso Beans'},
+  {id:'c07',name:'French 75',glass:'Champagne Flute / Coupe',ing:[{n:'Gin',a:'1 oz'},{n:'Lemon Juice',a:'0.5 oz'},{n:'Simple Syrup',a:'0.5 oz'},{n:'Champagne',a:'3 oz'}],method:'Shake gin, lemon and syrup with ice, strain, top with champagne.',garnish:'Lemon Twist'},
+  {id:'c08',name:'Long Island Iced Tea',glass:'Tom Collins Glass',ing:[{n:'White Rum',a:'0.25 oz'},{n:'Gin',a:'0.25 oz'},{n:'Vodka',a:'0.25 oz'},{n:'Blanco Tequila',a:'0.25 oz'},{n:'Triple Sec',a:'0.25 oz'},{n:'Simple Syrup',a:'1 oz'},{n:'Lemon Juice',a:'1 oz'},{n:'Cola',a:''}],method:'Build in glass over ice and stir.',garnish:'Lemon Wheel'},
+  {id:'c09',name:'Margarita',glass:'Short Rocks Glass',ing:[{n:'Blanco Tequila',a:'1.5 oz'},{n:'Triple Sec',a:'0.5 oz'},{n:'Lime Juice',a:'0.5 oz'},{n:'Simple Syrup',a:'0.5 oz'}],method:'Shake with ice and strain over fresh ice.',garnish:'Lime Wheel'},
+  {id:'c10',name:'Mojito',glass:'Collins Glass',ing:[{n:'White Rum',a:'2 oz'},{n:'Lime Juice',a:'1 oz'},{n:'Simple Syrup',a:'0.5 oz'},{n:'Mint Leaves',a:'5'},{n:'Soda Water',a:''}],method:'Muddle mint, add ingredients, top with soda.',garnish:'Mint Bouquet & Lime Wheel'},
+  {id:'c11',name:'Moscow Mule',glass:'Mule Mug / Collins Glass',ing:[{n:'Vodka',a:'2 oz'},{n:'Lemon Juice',a:'0.5 oz'},{n:'Ginger Beer',a:''},{n:'Ice',a:''}],method:'Build over ice and top with ginger beer.',garnish:'Lime Wheel'},
+  {id:'c12',name:'Negroni',glass:'Short Rocks Glass',ing:[{n:'Gin',a:'0.75 oz'},{n:'Campari',a:'0.75 oz'},{n:'Sweet Vermouth',a:'0.75 oz'}],method:'Stir with ice and strain over fresh ice.',garnish:'Orange Twist'},
+  {id:'c13',name:'Old Fashioned',glass:'Short Rocks Glass',ing:[{n:'Rye Whisky',a:'2 oz'},{n:'Brown Sugar Syrup',a:'0.5 oz'},{n:'Angostura Bitters',a:'3 dashes'}],method:'Stir with ice and strain over large cube.',garnish:'Orange Peel'},
+  {id:'c14',name:'Pisco Sour',glass:'Coupe Glass',ing:[{n:'Pisco',a:'1.5 oz'},{n:'Lime Juice',a:'1 oz'},{n:'Simple Syrup',a:'0.75 oz'},{n:'Egg White',a:'0.75 oz'}],method:'Dry shake, wet shake, strain.',garnish:'Angostura Design & Dried Lime'},
+  {id:'c15',name:'Rum DMC',glass:'Short Rocks Glass',ing:[{n:'Kraken Spiced Rum',a:'1.5 oz'},{n:'Campari',a:'0.5 oz'},{n:'Pineapple Juice',a:'2 oz'},{n:'Lime Juice',a:'0.5 oz'},{n:'Brown Sugar Syrup',a:'0.5 oz'}],method:'Shake hard with ice and strain.',garnish:'Fresh Lime Wheel'},
+  {id:'c16',name:'Shaft',glass:'Rocks Glass',ing:[{n:'Espresso',a:'1 oz'},{n:'Vodka',a:'1 oz'},{n:'Baileys',a:'0.5 oz'},{n:'Kahlua',a:'0.5 oz'}],method:'Shake with ice and pour.',garnish:'None'},
+  {id:'c17',name:'Strawberry Daiquiri Martini',glass:'Martini Glass',ing:[{n:'White Rum',a:'1.5 oz'},{n:'Strawberry Purée',a:'1 oz'},{n:'Simple Syrup',a:'0.75 oz'},{n:'Lime Juice',a:'0.75 oz'}],method:'Shake and double strain.',garnish:'Dehydrated Lime Wheel'},
+  {id:'c18',name:'Tom Collins',glass:'Collins Glass',ing:[{n:'Gin',a:'1 oz'},{n:'Lemon Juice',a:'0.5 oz'},{n:'Simple Syrup',a:'0.25 oz'},{n:'Soda Water',a:''}],method:'Build in glass over ice.',garnish:'Lemon Wheel'},
+  {id:'c19',name:'Whiskey Sour',glass:'Martini Glass',ing:[{n:'Rye Whisky',a:'2 oz'},{n:'Lemon Juice',a:'0.75 oz'},{n:'Simple Syrup',a:'0.75 oz'},{n:'Egg White',a:'1 oz'}],method:'Dry shake, wet shake, double strain.',garnish:'Bitters Drops'},
+  {id:'c20',name:'Martini',glass:'Martini Glass',ing:[{n:'Vodka or Gin',a:'2 oz'},{n:'Dry Vermouth',a:'0.25 oz'}],method:'Stir or shake with ice, strain.',garnish:'2 Olives'},
+  {id:'c21',name:'Manhattan',glass:'Nick & Nora',ing:[{n:'Rye Whisky',a:'1.5 oz'},{n:'Sweet Vermouth',a:'0.75 oz'},{n:'Bitters',a:'2 dashes'}],method:'Stir with ice and strain.',garnish:'Maraschino Cherry'},
+  {id:'c22',name:'Caesar',glass:'Tall Glass',ing:[{n:'Vodka',a:''},{n:'Tabasco',a:''},{n:'Worcestershire',a:''},{n:'Pickle Juice',a:''},{n:'Clamato Juice',a:''},{n:'Ice',a:''}],method:'Build in glass over ice.',garnish:'Celery / Lime Optional'},
+  {id:'c23',name:'Caesar Kapow',glass:'Tom Collins Glass',ing:[{n:'Vodka',a:'1 oz'},{n:'Basil Leaves',a:'3'},{n:'Kapow Chili Oil',a:'1 bar spoon'},{n:'Worcestershire',a:'0.25 oz'},{n:'Clamato Juice',a:''}],method:'Muddle basil, build in glass.',garnish:'Lime Wedge, Pickled Bean, Basil'},
+  {id:'c24',name:'Irish Coffee',glass:'Coffee Glass',ing:[{n:'Jameson',a:'0.5 oz'},{n:'Baileys',a:'0.5 oz'},{n:'Coffee',a:''}],method:'Build directly in glass.',garnish:'Whipped Cream'},
+  {id:'c25',name:'Rusty Nail',glass:'Short Rocks Glass',ing:[{n:'Scotch Whisky',a:'1.5 oz'},{n:'Drambuie',a:'0.75 oz'}],method:'Build over ice.',garnish:'Lemon Peel'},
+  {id:'c26',name:'Paralyzer',glass:'Collins Glass',ing:[{n:'Vodka',a:'0.5 oz'},{n:'Kahlua',a:'0.5 oz'},{n:'Milk',a:''},{n:'Coca Cola',a:''}],method:'Build over ice.',garnish:'Cherry'},
 ];
 
-// ── State ───────────────────────────────────────────────────
-let state = {
-  cocktails: [],
-  view: 'list',   // list | detail | edit | quiz
-  selId: null,
-  editId: null,   // null = new
-  quiz: null,
-  quizIdx: 0,
-  quizPicked: null,
-  quizScore: 0,
-  quizDone: false,
-  confirmDel: false,
-};
-
-// ── Storage ──────────────────────────────────────────────────
-function load() {
-  try { const d = localStorage.getItem(KEY); return d ? JSON.parse(d) : null; } catch { return null; }
-}
-function save(list) {
-  try { localStorage.setItem(KEY, JSON.stringify(list)); } catch {}
-}
-
 // ── Utils ────────────────────────────────────────────────────
-const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,6);
-const shuffle = a => [...a].sort(() => Math.random() - .5);
-function esc(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-function ingStr(ing) {
-  return ing.slice(0,4).map(x => `${esc(x.n)} ${esc(x.a)}`).join(' &middot; ') + (ing.length > 4 ? ' …' : '');
-}
-function genQuiz(cs) {
-  return shuffle(cs).map(c => {
-    const others = shuffle(cs.filter(x => x.id !== c.id)).slice(0,3);
-    return {
-      name: c.name,
-      opts: shuffle([{id:uid(),ing:c.ing,correct:true}, ...others.map(d=>({id:uid(),ing:d.ing,correct:false}))])
-    };
+const genId = () => Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const shuffle = a => [...a].sort(()=>Math.random()-.5);
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const ingLabel = i => i.a ? `${i.n}  ·  ${i.a}` : i.n;
+let toastT;
+function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),2000);}
+
+function genQuiz(cs){
+  const allLabels=[...new Set(cs.flatMap(c=>c.ing.map(ingLabel)))];
+  return shuffle(cs).map(c=>{
+    const correct=c.ing.map(ingLabel);
+    const cSet=new Set(correct);
+    const pool=shuffle(allLabels.filter(l=>!cSet.has(l)));
+    return {name:c.name,cSet,opts:shuffle([...correct,...pool.slice(0,3)])};
   });
 }
-let toastTimer;
-function toast(msg) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show'), 1800);
+
+// ── Firestore helpers ────────────────────────────────────────
+const colRef = () => collection(db,'users',S.uid,'cocktails');
+const dRef   = id => doc(db,'users',S.uid,'cocktails',id);
+const toFS   = ({id,...r}) => r;
+
+async function dbLoad(){
+  const snap = await getDocs(colRef());
+  if(snap.empty){
+    const batch = writeBatch(db);
+    for(const c of SEED) batch.set(dRef(c.id), toFS(c));
+    await batch.commit();
+    return [...SEED];
+  }
+  return snap.docs.map(d=>({...d.data(),id:d.id}));
 }
 
+// ── State ────────────────────────────────────────────────────
+let S={
+  auth:'loading', uid:null, userName:null, userPhoto:null,
+  cocktails:[], view:'list',
+  selId:null, editId:null, editForm:null, search:'',
+  quiz:null, qIdx:0, qSel:new Set(), qSub:false, qScore:0, qDone:false,
+  confirmDel:false,
+};
+
 // ── Render ───────────────────────────────────────────────────
-function render() {
-  const { view, cocktails, selId, editId, quiz, quizIdx, quizPicked, quizScore, quizDone, confirmDel } = state;
-  const app = document.getElementById('app');
+function render(){
+  const app=document.getElementById('app');
+  const {auth,cocktails,selId,editId,quiz,qIdx,qSel,qSub,qScore,qDone,confirmDel,search}=S;
 
-  if (view === 'list') {
-    const canPractice = cocktails.length >= 4;
-    app.innerHTML = `
-      <div class="page">
-        <div class="hdr">
-          <h1>🍹 配方库</h1>
-          <button class="btn btn-pill btn-amber${canPractice ? '' : ' btn-disabled'}" id="btn-practice" style="font-size:14px;padding:8px 18px;">
-            ▶ 练习
-          </button>
+  // Loading
+  if(auth==='loading'){
+    app.innerHTML=`<div class="center-screen"><p style="color:var(--t2);font-size:14px;">Loading…</p></div>`;
+    return;
+  }
+
+  // Login
+  if(auth==='out'){
+    app.innerHTML=`
+    <div class="center-screen">
+      <div style="font-size:60px;margin-bottom:20px;">🍹</div>
+      <h1 style="font-size:26px;font-weight:700;margin-bottom:10px;">Bar Recipe Trainer</h1>
+      <p style="font-size:14px;color:var(--t2);line-height:1.7;margin-bottom:44px;">Your cocktail recipes,<br>synced across all devices.</p>
+      <button class="btn btp bta" style="font-size:15px;padding:13px 28px;" onclick="window.signIn()">
+        <svg width="18" height="18" viewBox="0 0 24 24" style="flex-shrink:0"><path fill="var(--amber-t)" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="var(--amber-t)" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="var(--amber-t)" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="var(--amber-t)" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Sign in with Google
+      </button>
+    </div>`;
+    return;
+  }
+
+  // ── LIST ──
+  if(S.view==='list'){
+    const fl=search?cocktails.filter(c=>c.name.toLowerCase().includes(search.toLowerCase())):cocktails;
+    app.innerHTML=`<div class="page">
+      <div class="hdr">
+        <h1>🍹 Bar Recipes</h1>
+        <button class="btn btp bta${cocktails.length<2?' btx':''}" onclick="${cocktails.length>=2?'window.startQuiz()':''}" style="font-size:13px;padding:8px 16px;">▶ Practice</button>
+        <button class="btn bti" onclick="window.doSignOut()" title="Sign out" style="color:var(--t2);">⏏</button>
+      </div>
+      <div style="padding:10px 16px 4px;">
+        <input class="inp" style="background:var(--surf2);border-color:var(--bdr);" placeholder="Search…" value="${esc(search)}" oninput="S.search=this.value;render()">
+      </div>
+      <p class="sec-lbl">${fl.length} recipes</p>
+      <div class="body" style="padding-top:2px;">
+        ${fl.length===0?'<p class="empty">No recipes found</p>':fl.map(c=>`
+        <div class="card card-tap" style="display:flex;justify-content:space-between;align-items:center;" onclick="window.goDetail('${esc(c.id)}')">
+          <div><p style="font-size:15px;font-weight:600;">${esc(c.name)}</p>
+          <p style="font-size:12px;color:var(--t2);margin-top:3px;">${esc(c.glass||'—')} · ${c.ing.length} ingredients</p></div>
+          <span style="font-size:20px;color:var(--t3);">›</span>
+        </div>`).join('')}
+      </div>
+      <div class="fab-w"><button class="btn btp bta fab" onclick="window.goEdit(null)">＋ Add Recipe</button></div>
+    </div>`;
+  }
+
+  // ── DETAIL ──
+  else if(S.view==='detail'){
+    const c=cocktails.find(x=>x.id===selId);if(!c){window.goList();return;}
+    app.innerHTML=`<div class="page">
+      <div class="hdr">
+        <button class="btn bti" onclick="window.goList()">‹</button>
+        <h1>${esc(c.name)}</h1>
+        <button class="btn bti" onclick="window.goEdit('${esc(c.id)}')">✎</button>
+      </div>
+      <div class="body">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;">
+          ${c.glass?`<span class="badge">${esc(c.glass)}</span>`:''}
+          ${c.garnish&&c.garnish!=='None'?`<span class="badge" style="background:var(--gbg);color:var(--gt);">🌿 ${esc(c.garnish)}</span>`:''}
         </div>
-        <p class="section-title">${cocktails.length} 款配方${canPractice ? '' : ' · 需4款以上才能练习'}</p>
-        <div class="body" style="padding-top:4px;">
-          ${cocktails.length === 0 ? `<p class="empty">还没有配方<br>点击下方按钮添加</p>` :
-            cocktails.map(c => `
-              <div class="card card-tap chev" data-id="${esc(c.id)}" style="display:flex;justify-content:space-between;align-items:center;" onclick="sel('${esc(c.id)}')">
-                <div>
-                  <p style="font-size:15px;font-weight:600;">${esc(c.name)}</p>
-                  <p style="font-size:12px;color:var(--text2);margin-top:3px;">${esc(c.glass||'—')} &nbsp;·&nbsp; ${c.ing.length} 种原料</p>
-                </div>
-              </div>`).join('')}
+        <p class="lbl">Ingredients</p>
+        <div class="card">${c.ing.map(x=>`<div class="row"><span style="font-size:15px;">${esc(x.n)}</span><span style="font-size:15px;font-weight:600;color:var(--t2);">${esc(x.a)}</span></div>`).join('')}</div>
+        ${c.method?`<p class="lbl" style="margin-top:16px;">Method</p><div class="card"><p style="font-size:14px;line-height:1.7;">${esc(c.method)}</p></div>`:''}
+        <div style="margin-top:24px;">
+          ${confirmDel?`<div style="background:var(--rbg);border:1px solid var(--rbdr);border-radius:var(--rad);padding:14px;text-align:center;">
+            <p style="color:var(--red);font-size:14px;margin-bottom:12px;">Delete "${esc(c.name)}"?</p>
+            <div style="display:flex;gap:10px;">
+              <button class="btn btf" onclick="S.confirmDel=false;render()">Cancel</button>
+              <button class="btn btf" style="background:var(--red);border:none;color:#fff;font-weight:600;" onclick="window.doDelete('${esc(c.id)}')">Delete</button>
+            </div></div>`:`
+          <button class="btn btd btf" onclick="S.confirmDel=true;render()">🗑 Delete Recipe</button>`}
         </div>
-        <div class="fab-wrap">
-          <button class="btn btn-amber btn-pill fab" onclick="goEdit(null)">＋ 添加配方</button>
+      </div>
+    </div>`;
+  }
+
+  // ── EDIT ──
+  else if(S.view==='edit'){
+    const f=S.editForm;
+    const ok=f.name.trim()&&f.ing.some(x=>x.n.trim());
+    app.innerHTML=`<div class="page">
+      <div class="hdr">
+        <button class="btn bti" onclick="window.backEdit()">‹</button>
+        <h1>${editId?'Edit Recipe':'New Recipe'}</h1>
+        <button id="sbtn" class="btn btp bta${ok?'':' btx'}" onclick="${ok?'window.saveForm()':''}" style="padding:8px 18px;">Save</button>
+      </div>
+      <div class="body">
+        <div class="fg"><span class="lbl">Name *</span>
+          <input class="inp" value="${esc(f.name)}" placeholder="e.g. Mojito" oninput="S.editForm.name=this.value;window.checkSave()"></div>
+        <div class="fg"><span class="lbl">Glassware</span>
+          <input class="inp" value="${esc(f.glass)}" placeholder="e.g. Collins Glass" oninput="S.editForm.glass=this.value"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <span class="lbl">Ingredients *</span>
+          <button class="btn" style="font-size:13px;padding:5px 12px;" onclick="window.addIng()">＋ Add</button>
         </div>
+        <div id="ing-list">${f.ing.map((x,i)=>iRow(x,i,f.ing.length)).join('')}</div>
+        <div class="fg" style="margin-top:8px;"><span class="lbl">Method</span>
+          <textarea class="inp" rows="3" oninput="S.editForm.method=this.value" placeholder="How to make it…">${esc(f.method)}</textarea></div>
+        <div class="fg"><span class="lbl">Garnish</span>
+          <input class="inp" value="${esc(f.garnish)}" placeholder="e.g. Lime Wheel" oninput="S.editForm.garnish=this.value"></div>
+      </div>
+    </div>`;
+  }
+
+  // ── QUIZ ──
+  else if(S.view==='quiz'){
+    if(qDone){
+      const tot=quiz.length,pct=Math.round(qScore/tot*100);
+      const g=pct>=80?{i:'🏆',m:'Excellent!',c:'#854F0B',b:'#FAC775'}:pct>=50?{i:'👍',m:'Good job!',c:'#0F6E56',b:'#9FE1CB'}:{i:'💪',m:'Keep practicing!',c:'#534AB7',b:'#CECBF6'};
+      app.innerHTML=`<div class="center-screen">
+        <div style="width:72px;height:72px;border-radius:50%;background:${g.b};display:flex;align-items:center;justify-content:center;font-size:34px;margin-bottom:16px;">${g.i}</div>
+        <p style="font-size:40px;font-weight:700;margin-bottom:4px;">${qScore}/${tot}</p>
+        <p style="font-size:14px;color:var(--t2);margin-bottom:6px;">Accuracy ${pct}%</p>
+        <p style="font-size:18px;font-weight:600;color:${g.c};margin-bottom:32px;">${g.m}</p>
+        <button class="btn btp bta" onclick="window.goList()" style="font-size:15px;">Back to Recipes</button>
       </div>`;
-    if (canPractice) document.getElementById('btn-practice').onclick = startPractice;
-
-  } else if (view === 'detail') {
-    const c = cocktails.find(x => x.id === selId);
-    if (!c) { goList(); return; }
-    app.innerHTML = `
-      <div class="page">
-        <div class="hdr">
-          <button class="btn btn-icon" onclick="goList()">‹ 返回</button>
-          <h1 style="flex:1;">${esc(c.name)}</h1>
-          <button class="btn btn-icon" onclick="goEdit('${esc(c.id)}')">✎</button>
-        </div>
-        <div class="body">
-          ${c.glass ? `<span class="badge" style="margin-bottom:18px;display:inline-block;">${esc(c.glass)}</span>` : ''}
-          <p class="label" style="margin-bottom:8px;">配方原料</p>
-          <div class="card">
-            ${c.ing.map((item,i) => `
-              <div class="row">
-                <span style="font-size:15px;">${esc(item.n)}</span>
-                <span style="font-size:15px;font-weight:600;color:var(--text2);">${esc(item.a)}</span>
-              </div>`).join('')}
-          </div>
-          ${c.note ? `
-            <p class="label" style="margin:18px 0 8px;">制作方法</p>
-            <div class="card"><p style="font-size:14px;line-height:1.7;">${esc(c.note)}</p></div>` : ''}
-          <div style="margin-top:24px;">
-            ${confirmDel ? `
-              <div class="confirm-box">
-                <p>确认删除《${esc(c.name)}》？</p>
-                <div class="confirm-btns">
-                  <button class="btn" onclick="cancelDel()">取消</button>
-                  <button class="btn btn-del-confirm" onclick="deleteCocktail('${esc(c.id)}')">确认删除</button>
-                </div>
-              </div>` : `
-              <button class="btn btn-danger btn-full" onclick="askDel()">🗑 删除配方</button>`}
-          </div>
-        </div>
-      </div>`;
-
-  } else if (view === 'edit') {
-    const c = editId ? cocktails.find(x => x.id === editId) : null;
-    const f = state.editForm;
-    app.innerHTML = `
-      <div class="page">
-        <div class="hdr">
-          <button class="btn btn-icon" onclick="backFromEdit()">‹ 返回</button>
-          <h1 style="flex:1;">${c ? '编辑配方' : '新增配方'}</h1>
-          <button class="btn btn-amber" id="btn-save" onclick="saveForm()" style="padding:8px 18px;">保存</button>
-        </div>
-        <div class="body">
-          <div class="form-group">
-            <span class="label">鸡尾酒名称 *</span>
-            <input class="inp" id="f-name" type="text" placeholder="例：莫吉托" value="${esc(f.name)}" oninput="updateForm('name',this.value)">
-          </div>
-          <div class="form-group">
-            <span class="label">杯型</span>
-            <input class="inp" id="f-glass" type="text" placeholder="例：Highball杯" value="${esc(f.glass)}" oninput="updateForm('glass',this.value)">
-          </div>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-            <span class="label">原料 *</span>
-            <button class="btn" style="font-size:13px;padding:5px 12px;" onclick="addIng()">＋ 添加</button>
-          </div>
-          <div id="ing-list">
-            ${f.ing.map((item,i) => ingRow(item,i,f.ing.length)).join('')}
-          </div>
-          <div class="form-group" style="margin-top:8px;">
-            <span class="label">制作方法（可选）</span>
-            <textarea class="inp" id="f-note" rows="4" placeholder="描述制作步骤…" oninput="updateForm('note',this.value)">${esc(f.note)}</textarea>
-          </div>
-        </div>
-      </div>`;
-    checkSaveBtn();
-
-  } else if (view === 'quiz') {
-    if (quizDone) {
-      const total = quiz.length;
-      const pct = Math.round(quizScore / total * 100);
-      const { icon, msg, ic, ibg } = pct >= 80
-        ? {icon:'🏆', msg:'优秀！', ic:'#854F0B', ibg:'#FAC775'}
-        : pct >= 50
-        ? {icon:'👍', msg:'不错！', ic:'#0F6E56', ibg:'#9FE1CB'}
-        : {icon:'💪', msg:'继续加油！', ic:'#534AB7', ibg:'#CECBF6'};
-      app.innerHTML = `
-        <div style="min-height:70vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center;">
-          <div class="result-icon" style="background:${ibg};font-size:32px;">${icon}</div>
-          <p style="font-size:40px;font-weight:700;margin-bottom:4px;">${quizScore}/${total}</p>
-          <p style="font-size:14px;color:var(--text2);margin-bottom:6px;">正确率 ${pct}%</p>
-          <p style="font-size:18px;font-weight:600;color:${ic};margin-bottom:32px;">${msg}</p>
-          <button class="btn btn-amber btn-pill" onclick="goList()" style="font-size:15px;">返回配方库</button>
-        </div>`;
       return;
     }
-    const q = quiz[quizIdx];
-    const letters = ['A','B','C','D'];
-    app.innerHTML = `
-      <div class="page">
-        <div class="hdr" style="justify-content:space-between;">
-          <button class="btn btn-icon" onclick="goList()">✕</button>
-          <span style="font-size:14px;font-weight:600;">⭐ ${quizScore} 分</span>
-          <span style="font-size:13px;color:var(--text2);">${quizIdx+1} / ${quiz.length}</span>
-        </div>
-        <div class="progress-bar"><div class="progress-fill" style="width:${(quizIdx/quiz.length)*100}%;"></div></div>
-        <div class="body" style="padding-top:22px;">
-          <p class="label" style="margin-bottom:6px;">下列哪组原料属于</p>
-          <h2 style="font-size:26px;margin-bottom:22px;">${esc(q.name)}</h2>
-          ${q.opts.map((opt,i) => {
-            let cls = 'card';
-            if (quizPicked) {
-              if (opt.correct) cls += ' opt-correct';
-              else if (opt.id === quizPicked.id) cls += ' opt-wrong';
-              else cls += ' opt-dim';
-            }
-            return `<div class="${cls} opt${quizPicked ? '' : ' card-tap'}" onclick="${quizPicked ? '' : `pickOpt('${opt.id}')`}">
-              <span class="opt-letter">${quizPicked && opt.correct ? '✓' : quizPicked && opt.id===quizPicked.id && !opt.correct ? '✗' : letters[i]}</span>
-              <p class="opt-text">${ingStr(opt.ing)}</p>
-            </div>`;
-          }).join('')}
-          ${quizPicked ? `
-            <button class="btn btn-amber btn-full btn-pill" onclick="nextQ()" style="margin-top:8px;font-size:15px;padding:13px 0;">
-              ${quizIdx+1 >= quiz.length ? '查看成绩 →' : '下一题 →'}
-            </button>` : ''}
-        </div>
-      </div>`;
+    const q=quiz[qIdx];
+    const chips=q.opts.map(name=>{
+      if(!qSub){return `<button class="chip${qSel.has(name)?' sel':''}" onclick="window.toggleChip('${esc(name)}')">${esc(name)}</button>`;}
+      const inC=q.cSet.has(name),wasSel=qSel.has(name);
+      const cls=inC&&wasSel?'ok':!inC&&wasSel?'bad':inC&&!wasSel?'miss':'plain';
+      return `<button class="chip c-${cls}">${esc(name)}${cls==='ok'?' ✓':cls==='bad'?' ✗':cls==='miss'?' ←':''}</button>`;
+    }).join('');
+    const wrong=[...qSel].filter(n=>!q.cSet.has(n));
+    const missed=[...q.cSet].filter(n=>!qSel.has(n));
+    const perfect=qSub&&wrong.length===0&&missed.length===0;
+    app.innerHTML=`<div class="page">
+      <div class="hdr" style="justify-content:space-between;">
+        <button class="btn bti" onclick="window.goList()">✕</button>
+        <span style="font-size:14px;font-weight:600;">⭐ ${qScore} pts</span>
+        <span style="font-size:13px;color:var(--t2);">${qIdx+1} / ${quiz.length}</span>
+      </div>
+      <div class="prog"><div class="prog-f" style="width:${(qIdx/quiz.length)*100}%;"></div></div>
+      <div class="body" style="padding-top:22px;">
+        <p style="font-size:11px;font-weight:600;color:var(--t2);letter-spacing:.05em;text-transform:uppercase;margin-bottom:6px;">Select ALL ingredients for</p>
+        <h2 style="font-size:26px;margin-bottom:6px;">${esc(q.name)}</h2>
+        <p style="font-size:12px;color:var(--t3);margin-bottom:20px;">Must be exact — no more, no less.</p>
+        <div class="chips">${chips}</div>
+        ${qSub?`
+          <div style="background:${perfect?'var(--gbg)':'var(--rbg)'};border:1px solid ${perfect?'var(--green)':'var(--rbdr)'};border-radius:var(--rad);padding:12px 14px;color:${perfect?'var(--gt)':'var(--red)'};font-weight:600;margin-bottom:12px;">
+            ${perfect?'✓ Perfect! All correct.':`✗ ${[wrong.length?`${wrong.length} wrong`:'',(missed.length?`${missed.length} missed`:'')].filter(Boolean).join(', ')}`}
+          </div>
+          <div style="display:flex;gap:12px;font-size:12px;color:var(--t2);margin-bottom:16px;">
+            <span style="color:var(--gt);">✓ Correct</span><span style="color:var(--red);">✗ Wrong</span><span style="color:var(--orange);">← Missed</span>
+          </div>
+          <button class="btn btp bta btf" onclick="window.nextQ()" style="font-size:15px;padding:13px 0;">${qIdx+1>=quiz.length?'See Results →':'Next →'}</button>`:`
+          <button class="btn btp bta btf${qSel.size===0?' btx':''}" onclick="${qSel.size>0?'window.submitQ()':''}" style="font-size:15px;padding:13px 0;">Submit Answer</button>`}
+      </div>
+    </div>`;
   }
 }
 
-function ingRow(item, i, total) {
-  return `<div class="ing-row" id="ing-row-${i}">
-    <input class="inp" type="text" placeholder="原料名称" value="${esc(item.n)}" oninput="updateIng(${i},'n',this.value)">
-    <input class="inp" type="text" placeholder="用量" value="${esc(item.a)}" oninput="updateIng(${i},'a',this.value)">
-    ${total > 1 ? `<button class="btn" style="color:var(--red);border-color:var(--red-border);padding:9px 10px;flex-shrink:0;" onclick="delIng(${i})">✕</button>` : ''}
+// ── Helper ───────────────────────────────────────────────────
+function iRow(x,i,tot){
+  return `<div class="ir">
+    <input class="inp" type="text" placeholder="Ingredient" value="${esc(x.n)}" oninput="S.editForm.ing[${i}].n=this.value;window.checkSave()">
+    <input class="inp" type="text" placeholder="Amount" value="${esc(x.a)}" oninput="S.editForm.ing[${i}].a=this.value">
+    ${tot>1?`<button class="btn" style="color:var(--red);border-color:var(--rbdr);padding:9px 10px;flex-shrink:0;" onclick="window.delIng(${i})">✕</button>`:''}
   </div>`;
 }
 
 // ── Actions ──────────────────────────────────────────────────
-function goList() { state.view='list'; state.confirmDel=false; render(); }
-function sel(id) { state.selId=id; state.view='detail'; state.confirmDel=false; render(); }
-function askDel() { state.confirmDel=true; render(); }
-function cancelDel() { state.confirmDel=false; render(); }
-function deleteCocktail(id) {
-  state.cocktails = state.cocktails.filter(c => c.id !== id);
-  save(state.cocktails); goList(); toast('已删除');
+function goList(){S.view='list';S.confirmDel=false;render();}
+function goDetail(id){S.selId=id;S.view='detail';S.confirmDel=false;render();}
+function goEdit(id){
+  S.editId=id;
+  const c=id?S.cocktails.find(x=>x.id===id):null;
+  S.editForm=c?{name:c.name,glass:c.glass||'',ing:c.ing.map(x=>({...x})),method:c.method||'',garnish:c.garnish||''}:{name:'',glass:'',ing:[{n:'',a:''}],method:'',garnish:''};
+  S.view='edit';render();
 }
-function goEdit(id) {
-  state.editId = id;
-  const c = id ? state.cocktails.find(x=>x.id===id) : null;
-  state.editForm = c
-    ? { name:c.name, glass:c.glass||'', ing:c.ing.map(x=>({...x})), note:c.note||'' }
-    : { name:'', glass:'', ing:[{n:'',a:''}], note:'' };
-  state.view = 'edit'; render();
+function backEdit(){S.view=S.editId?'detail':'list';render();}
+function checkSave(){
+  const ok=S.editForm.name.trim()&&S.editForm.ing.some(x=>x.n.trim());
+  const b=document.getElementById('sbtn');
+  if(b){b.classList.toggle('btx',!ok);b.onclick=ok?window.saveForm:null;}
 }
-function backFromEdit() {
-  state.view = state.editId ? 'detail' : 'list'; render();
+function addIng(){
+  S.editForm.ing.push({n:'',a:''});
+  const l=document.getElementById('ing-list');
+  if(l){const d=document.createElement('div');d.innerHTML=iRow({n:'',a:''},S.editForm.ing.length-1,S.editForm.ing.length);l.appendChild(d.firstChild);}
 }
-function updateForm(k, v) { state.editForm[k] = v; checkSaveBtn(); }
-function updateIng(i, k, v) { state.editForm.ing[i][k] = v; checkSaveBtn(); }
-function addIng() {
-  state.editForm.ing.push({n:'',a:''});
-  const list = document.getElementById('ing-list');
-  if (list) {
-    const div = document.createElement('div');
-    div.innerHTML = ingRow({n:'',a:''}, state.editForm.ing.length-1, state.editForm.ing.length);
-    list.appendChild(div.firstChild);
-  }
-  checkSaveBtn();
+function delIng(i){
+  S.editForm.ing.splice(i,1);
+  const l=document.getElementById('ing-list');
+  if(l)l.innerHTML=S.editForm.ing.map((x,j)=>iRow(x,j,S.editForm.ing.length)).join('');
+  checkSave();
 }
-function delIng(i) {
-  state.editForm.ing.splice(i,1);
-  const list = document.getElementById('ing-list');
-  if (list) {
-    list.innerHTML = state.editForm.ing.map((item,j) => ingRow(item,j,state.editForm.ing.length)).join('');
-  }
-  checkSaveBtn();
+async function saveForm(){
+  const f=S.editForm;
+  if(!f.name.trim()||!f.ing.some(x=>x.n.trim()))return;
+  const clean={name:f.name.trim(),glass:f.glass.trim(),ing:f.ing.filter(x=>x.n.trim()),method:f.method.trim(),garnish:f.garnish.trim()};
+  const isNew=!S.editId;
+  const id=S.editId||genId();
+  const cocktail={id,...clean};
+  if(!isNew) S.cocktails=S.cocktails.map(c=>c.id===S.editId?cocktail:c);
+  else S.cocktails.push(cocktail);
+  S.selId=id; S.view=S.editId?'detail':'list'; render();
+  toast(isNew?'Recipe added ✓':'Saved ✓');
+  try{ await setDoc(dRef(id),toFS(cocktail)); }
+  catch(e){ toast('Sync failed — check connection'); }
 }
-function checkSaveBtn() {
-  const btn = document.getElementById('btn-save');
-  if (!btn) return;
-  const ok = state.editForm.name.trim() && state.editForm.ing.some(x=>x.n.trim());
-  btn.classList.toggle('btn-disabled', !ok);
+async function doDelete(id){
+  S.cocktails=S.cocktails.filter(c=>c.id!==id);
+  goList(); toast('Deleted');
+  try{ await deleteDoc(dRef(id)); }
+  catch(e){ toast('Sync failed — check connection'); }
 }
-function saveForm() {
-  const f = state.editForm;
-  if (!f.name.trim() || !f.ing.some(x=>x.n.trim())) return;
-  const clean = { name:f.name.trim(), glass:f.glass.trim(), ing:f.ing.filter(x=>x.n.trim()), note:f.note.trim() };
-  if (state.editId) {
-    state.cocktails = state.cocktails.map(c => c.id===state.editId ? {...c,...clean} : c);
-  } else {
-    state.cocktails.push({ id:uid(), ...clean });
-  }
-  save(state.cocktails);
-  const wasNew = !state.editId;
-  state.view = state.editId ? 'detail' : 'list';
-  render();
-  toast(wasNew ? '配方已添加' : '已保存');
+function startQuiz(){S.quiz=genQuiz(S.cocktails);S.qIdx=0;S.qSel=new Set();S.qSub=false;S.qScore=0;S.qDone=false;S.view='quiz';render();}
+function toggleChip(n){if(S.qSub)return;S.qSel.has(n)?S.qSel.delete(n):S.qSel.add(n);render();}
+function submitQ(){if(S.qSel.size===0)return;S.qSub=true;const q=S.quiz[S.qIdx];const ok=[...q.cSet].every(n=>S.qSel.has(n))&&[...S.qSel].every(n=>q.cSet.has(n));if(ok)S.qScore++;render();}
+function nextQ(){if(S.qIdx+1>=S.quiz.length){S.qDone=true;render();return;}S.qIdx++;S.qSel=new Set();S.qSub=false;render();}
+
+async function signIn(){
+  try{ await signInWithPopup(auth,gp); }
+  catch(e){ toast('Sign in failed. Please try again.'); }
 }
-function startPractice() {
-  state.quiz = genQuiz(state.cocktails);
-  state.quizIdx = 0; state.quizPicked = null; state.quizScore = 0; state.quizDone = false;
-  state.view = 'quiz'; render();
-}
-function pickOpt(id) {
-  const q = state.quiz[state.quizIdx];
-  const opt = q.opts.find(o => o.id === id);
-  if (!opt) return;
-  state.quizPicked = opt;
-  if (opt.correct) state.quizScore++;
-  render();
-}
-function nextQ() {
-  if (state.quizIdx + 1 >= state.quiz.length) { state.quizDone = true; render(); return; }
-  state.quizIdx++; state.quizPicked = null; render();
+async function doSignOut(){
+  await signOut(auth);
 }
 
-// ── Init ─────────────────────────────────────────────────────
-const stored = load();
-state.cocktails = stored || SEED;
-if (!stored) save(state.cocktails);
-render();
+// ── Expose to global scope (required for onclick in module) ──
+window.goList=goList; window.goDetail=goDetail; window.goEdit=goEdit;
+window.backEdit=backEdit; window.checkSave=checkSave; window.addIng=addIng;
+window.delIng=delIng; window.saveForm=saveForm; window.doDelete=doDelete;
+window.startQuiz=startQuiz; window.toggleChip=toggleChip;
+window.submitQ=submitQ; window.nextQ=nextQ;
+window.signIn=signIn; window.doSignOut=doSignOut;
+window.S=S; window.render=render;
+
+// ── Auth listener ────────────────────────────────────────────
+onAuthStateChanged(auth, async user => {
+  if(user){
+    S.uid=user.uid; S.userName=user.displayName; S.userPhoto=user.photoURL;
+    S.auth='in'; render();
+    try{
+      S.cocktails = await dbLoad();
+      render();
+    } catch(e){
+      toast('Failed to load recipes');
+    }
+  } else {
+    S.auth='out'; S.uid=null; S.cocktails=[];
+    render();
+  }
+});
 </script>
 </body>
 </html>
