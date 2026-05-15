@@ -196,7 +196,8 @@ function render(){
 
   // ── LIST ──
   if(S.view==='list'){
-    const fl=search?cocktails.filter(c=>c.name.toLowerCase().includes(search.toLowerCase())):cocktails;
+    const sorted=[...cocktails].sort((a,b)=>a.name.localeCompare(b.name));
+    const fl=search?sorted.filter(c=>c.name.toLowerCase().startsWith(search.toLowerCase())):sorted;
     app.innerHTML=`<div class="page">
       <div class="hdr">
         <h1>🍹 Bar Recipes</h1>
@@ -206,7 +207,7 @@ function render(){
       <div style="padding:10px 16px 4px;">
         <input class="inp" style="background:var(--surf2);border-color:var(--bdr);" placeholder="Search…" value="${esc(search)}" oninput="S.search=this.value;render()">
       </div>
-      <p class="sec-lbl">${fl.length} recipes</p>
+      <p class="sec-lbl">${search?fl.length+' results':sorted.length+' recipes'}</p>
       <div class="body" style="padding-top:2px;">
         ${fl.length===0?'<p class="empty">No recipes found</p>':fl.map(c=>`
         <div class="card card-tap" style="display:flex;justify-content:space-between;align-items:center;" onclick="window.goDetail('${esc(c.id)}')">
